@@ -1,7 +1,7 @@
 library(ggplot2)
 library(anytime)
 library(corrplot)
-library(ggcorplot)
+library(ggcorrplot)
 
 # Convert from UNIX Epoch Time to a Date string.
 time_convert <- function(t) if(is.numeric(t) == T) anydate(t / 1000) else (as.numeric(as.POSIXct(t)) * 1000)
