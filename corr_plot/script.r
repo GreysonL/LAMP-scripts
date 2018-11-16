@@ -121,7 +121,12 @@ survey_summary=function(chunk){
   colnames(survey_key)=c("question","category")
   name=rep(NA,nrow(form))
   for(i in 1:nrow(form)){
-    name[i]=as.character(survey_key$category)[survey_key$question==as.character(form$question)[i]]
+    tempName = as.character(survey_key$category)[survey_key$question==as.character(form$question)[i]]
+    if(length(tempName) > 0) {
+      name[i]= tempName
+    } else {
+      name[i] = "other"
+    }
   }
   form$name = name
   form$time = as.numeric(as.character(form$time))
