@@ -34,8 +34,17 @@ patient_table <- function(result) {
   for(i in 1 : nrow(info)) {
     chunk <- info[i,]
     activity <- activity_get(chunk, map)
-    if(activity[3] == 'game')
-      game_table <- rbind(game_table, game_summary(chunk, activity[1]))
+    if(activity[3] == 'game'){
+        if (activity[1] == 'Spatial Span') {
+            if (chunk$static_data$type == '1') {
+              game_table <- rbind(game_table, game_summary(chunk, 'Spatial Span Forward'))
+            } else if (chunk$static_data$type == '2'){
+              game_table <- rbind(game_table, game_summary(chunk, 'Spatial Span Backward'))
+            }
+        } else {
+            game_table <- rbind(game_table, game_summary(chunk, activity[1]))
+        }
+      }
     if(activity[3] == 'survey')
       survey_table <- rbind(survey_table, survey_summary(chunk))
   }
@@ -135,7 +144,7 @@ survey_summary=function(chunk){
 
 game_reform <- function(game) {
   # Append statistics to the unique'd temporal events.
-  cat = c('Spatial Span Forward', 'Spatial Span Backward', 'Jewels Trails A', 'Jewels Trails B')
+  cat = c('Spatial Span Forward', 'Spatial Span Backward', 'Jewels A', 'Jewels B')
   unique_t <- unique(game$start)
   time_table <- matrix(0, nrow <- length(unique_t), ncol <- length(cat) * 3)
   for(i in 1 : length(unique_t)) {
@@ -207,7 +216,7 @@ make_df <- function(x, y, x_name = x, y_name = y, source) {
 
 # 3 options in this function: accuracy, mean, sd
 game_plot <- function(table,option) {
-  name = c('Spatial Span Forward','Spatial Span Backward','Jewels Trails A','Jewels Trails B')
+  name = c('Spatial Span Forward', 'Spatial Span Backward', 'Jewels A', 'Jewels B')
   if(option=='accuracy'){
     new_name=paste0(name,'_accuracy')
     title_name = "Average Accuracy"
@@ -252,7 +261,7 @@ game_plot <- function(table,option) {
               aes(x = date, y = value, color = map)) +
     labs(title=title_name, x="Date", y=y_name) +
     scale_colour_manual("", values = c("Forward"="black","Backward"="red", 
-                    "Trails A"="blue","Trails B"="green"))
+                    "Jewels A"="blue","Jewels B"="green"))
 }
 
 
@@ -314,5 +323,3 @@ survey_plot=function(table,option){
 
 
 game_plot(patient_table(commandArgs()$data)$game,'accuracy')
-
-
