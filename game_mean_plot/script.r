@@ -45,7 +45,6 @@ patient_table <- function(result) {
       }
     }
   }
-
   tables <- game_reform(game_table)
 }
 
