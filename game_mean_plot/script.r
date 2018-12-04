@@ -156,6 +156,6 @@ game_plot <- function(table,option) {
                                        "Trails A"="blue","Trails B"="green"))
 }
 
-game_plot(patient_table(commandArgs()$data)$game,'mean')
+game_plot(patient_table(commandArgs()$data),'mean')
 
 
