@@ -52,7 +52,7 @@ game_summary <- function(chunk,name) {
   form <- c()
   for(i in 1 : nrow(temp)) {
     dat <- temp[i,]
-    form <- rbind(form, c(name, dat$`item`, dat$type, dat$elapsed_time, dat$level, chunk$start_time))
+    form <- rbind(form, c(name, dat$`item`, dat$type, dat$duration, dat$level, chunk$start_time))
   }
 
   # Reformat the dataframe.
@@ -74,7 +74,7 @@ survey_summary=function(chunk){
   form=c()
   for(i in 1:nrow(temp)){
     dat = temp[i,]
-    form=rbind(form,c(dat$`item`,dat$value,dat$elapsed_time,chunk$start_time))
+    form=rbind(form,c(dat$`item`,dat$value,dat$duration,chunk$start_time))
   }
   form = data.frame(form)
   colnames(form)=c('question','answer','time','start')
@@ -312,6 +312,6 @@ survey_plot=function(table,option){
                                        "Anxiety"="green","Social"="orange",'Depression'='purple'))
 }
 
-survey_plot(patient_table(commandArgs()$result)$survey,'time')
+survey_plot(patient_table(commandArgs()$data)$survey,'time')
 
 
