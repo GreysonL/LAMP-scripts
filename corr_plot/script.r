@@ -29,7 +29,7 @@ patient_table <- function(result) {
   
   # Separate Activities and Results from the input.
   map <- activity_map(result$activities)
-  info <- result$participant$results
+  info <- result$participant$result_events
   
   # Apply the appropriate summarizer function to the Activity type.
   for(i in 1 : nrow(info)) {
@@ -53,7 +53,7 @@ game_summary <- function(chunk,name) {
   form <- c()
   for(i in 1 : nrow(temp)) {
     dat <- temp[i,]
-    form <- rbind(form, c(name, dat$`item`, dat$type, dat$duration, dat$level, chunk$start_time))
+    form <- rbind(form, c(name, dat$`item`, dat$type, dat$duration, dat$level, chunk$timestamp))
   }
 
   # Reformat the dataframe.
@@ -75,7 +75,7 @@ survey_summary=function(chunk){
   form=c()
   for(i in 1:nrow(temp)){
     dat = temp[i,]
-    form=rbind(form,c(dat$`item`,dat$value,dat$duration,chunk$start_time))
+    form=rbind(form,c(dat$`item`,dat$value,dat$duration,chunk$timestamp))
   }
   form = data.frame(form)
   colnames(form)=c('question','answer','time','start')
