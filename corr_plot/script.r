@@ -53,7 +53,7 @@ game_summary <- function(chunk,name) {
   form <- c()
   for(i in 1 : nrow(temp)) {
     dat <- temp[i,]
-    form <- rbind(form, c(name, dat$`item`, dat$type, dat$elapsed_time, dat$level, chunk$start_time))
+    form <- rbind(form, c(name, dat$`item`, dat$type, dat$duration, dat$level, chunk$start_time))
   }
 
   # Reformat the dataframe.
@@ -75,7 +75,7 @@ survey_summary=function(chunk){
   form=c()
   for(i in 1:nrow(temp)){
     dat = temp[i,]
-    form=rbind(form,c(dat$`item`,dat$value,dat$elapsed_time,chunk$start_time))
+    form=rbind(form,c(dat$`item`,dat$value,dat$duration,chunk$start_time))
   }
   form = data.frame(form)
   colnames(form)=c('question','answer','time','start')
@@ -334,5 +334,5 @@ survey_heatmap=function(survey_table){
   ggcorrplot(M, method = "circle", type="lower", ggtheme=ggplot2::theme_minimal, title=paste0('Based on data of ',nrow(weeklyscore),' weeks'), legend.title="Corr")
 }
 
-survey_heatmap(patient_table(commandArgs()$result)$survey)
+survey_heatmap(patient_table(commandArgs()$data)$survey)
 
