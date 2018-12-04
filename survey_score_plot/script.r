@@ -28,7 +28,7 @@ patient_table <- function(result) {
   
   # Separate Activities and Results from the input.
   map <- activity_map(result$activities)
-  info <- result$participant$results
+  info <- result$participant$result_events
   
   # Apply the appropriate summarizer function to the Activity type.
   for(i in 1 : nrow(info)) {
