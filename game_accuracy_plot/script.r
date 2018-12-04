@@ -313,6 +313,6 @@ survey_plot=function(table,option){
 }
 
 
-game_plot(patient_table(commandArgs()$data)$game,'accuracy')
+game_plot(patient_table(commandArgs()$result)$game,'accuracy')
 
 
