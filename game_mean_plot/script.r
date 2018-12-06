@@ -139,8 +139,8 @@ game_plot <- function(table,option) {
               aes(x = date, y = value, color = map)) +
     geom_line(data = spatialB, 
               aes(x = date, y = value, color = map)) +
-    geom_line(data = trailsA, 
-              aes(x = date, y = value, color = map)) +
+    geom_smooth(data = trailsA, 
+              aes(x = date, y = value, color = map, se=F)) +
     geom_line(data = trailsB, 
               aes(x = date, y = value, color = map)) +
     geom_point(data = spatialF, 
