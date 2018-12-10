@@ -53,6 +53,7 @@ patient_table <- function(result) {
 game_summary <- function(chunk,name) {
   temp <- chunk$temporal_events[[1]]
   if(is.null(temp)) return(NULL)
+  if(length(temp) == 0) return(NULL)
   if(nrow(temp) <= 1) return(NULL)
   
   # Unpack all temporal events into a single dataframe. (discard static data!)
