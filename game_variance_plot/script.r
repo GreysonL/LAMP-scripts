@@ -177,18 +177,17 @@ game_reform <- function(game) {
 
 # This function neeeds to be changed once we figure out how medication is coded
 answer_to_score=function(survey){
-  score=rep(NA,nrow(survey))
-  score[survey$answer=='Not at all']=0
-  score[survey$answer=='Several Times']=1
-  score[survey$answer=='More than Half the Time']=2
-  score[survey$answer=='Nearly All the Time']=3
+  survey$answer=as.numeric(as.character(survey$answer))
+  score <- survey$answer
   score[survey$name=='medication']=3-score[survey$name=='medication']
+  score[survey$question=='In the last THREE DAYS, during the daytime I have gone outside my home']=3-score[survey$question=='In the last THREE DAYS, during the daytime I have gone outside my home']
+  score[survey$question=='In the last THREE DAYS, I have had someone to talk to']=3-score[survey$question=='In the last THREE DAYS, I have had someone to talk to']
   score
 }
 
 #  same logic as game_reform
 survey_reform=function(survey){
-  survey$answer=as.numeric(as.character(survey$answer))
+  survey$answer=answer_to_score(survey)
   cat = c('sleep','medication','social','psychosis','depression','anxiety')
   unique_t = unique(survey$start)
   time_table = matrix(0,nrow = length(unique_t), ncol=length(cat)*3)
@@ -327,7 +326,6 @@ survey_plot=function(table,option){
     scale_colour_manual("", values = c("Sleep"="black","Psychosis"="red", "Medication"="blue",
                                        "Anxiety"="green","Social"="orange",'Depression'='purple'))
 }
-
 
 survey_heatmap=function(survey_table){
   current_date = survey_table$date[1]
