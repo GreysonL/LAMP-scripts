@@ -1,12 +1,13 @@
 library(ggplot2)
 library(anytime)
 library(corrplot)
+library(ggcorrplot)
 
 # Convert from UNIX Epoch Time to a Date string.
 time_convert <- function(t) if(is.numeric(t) == T) anydate(t / 1000) else (as.numeric(as.POSIXct(t)) * 1000)
 
 # Construct Result statistics dataframes for the Participant.
-patient_table <- function(result) {
+patient_table <- function(result, plot_type) {
   # The mapping dataframe between Activity IDs and names.
   activity_map <- function(a) {
     map <- c()
@@ -34,34 +35,49 @@ patient_table <- function(result) {
   for(i in 1 : nrow(info)) {
     chunk <- info[i,]
     activity <- activity_get(chunk, map)
-    if(activity[3] == 'game')
-      game_table <- rbind(game_table, game_summary(chunk, activity[1]))
-    if(activity[3] == 'survey')
+    if(activity[3] == 'game' & plot_type == 'game'){
+      if (activity[1] == 'Spatial Span') {
+        if (chunk$static_data$type == '1') {
+          game_table <- rbind(game_table, game_summary(chunk, 'Spatial Span Forward'))
+        } else if (chunk$static_data$type == '2'){
+          game_table <- rbind(game_table, game_summary(chunk, 'Spatial Span Backward'))
+        }
+      } else {
+        game_table <- rbind(game_table, game_summary(chunk, activity[1]))
+      }
+    } else if (activity[3] == 'survey' & plot_type == 'survey') {
       survey_table <- rbind(survey_table, survey_summary(chunk))
+    }
   }
-  tables <- list('survey' = survey_reform(survey_table), 'game' = game_reform(game_table))
+  if (plot_type == 'game') {
+    tables <- game_reform(game_table)
+  } else if (plot_type == 'survey') {
+    tables <- survey_reform(survey_table)
+  }
+  tables
 }
 
 # Summarize all temporal events in the Result.
 game_summary <- function(chunk,name) {
   temp <- chunk$temporal_events[[1]]
   if(is.null(temp)) return(NULL)
+  if(length(temp)==0) return(NULL)
   if(nrow(temp) <= 1) return(NULL)
-
+  
   # Unpack all temporal events into a single dataframe. (discard static data!)
   form <- c()
   for(i in 1 : nrow(temp)) {
     dat <- temp[i,]
     form <- rbind(form, c(name, dat$`item`, dat$type, dat$duration, dat$level, chunk$timestamp))
   }
-
+  
   # Reformat the dataframe.
   form <- setNames(data.frame(form), c('name', 'item', 'correct', 'time', 'level', 'start'))
   form$item <- as.numeric(as.character(form$item))
   form$time <- as.numeric(as.character(form$time))
   form$level <- as.numeric(as.character(form$level))
   form$start <- time_convert(as.numeric(as.character(form$start)))
-
+  
   form
 }
 
@@ -80,38 +96,38 @@ survey_summary=function(chunk){
   colnames(form)=c('question','answer','time','start')
   
   q=c(
-  "Last night I had trouble falling asleep",                          
-  "Last night I had trouble staying asleep",                               
-  "This morning I was up earlier than I wanted",                           
-  "In the last THREE DAYS, I have taken my medications as scheduled",      
-  "In the last THREE DAYS, during the daytime I have gone outside my home",
-  "In the last THREE DAYS, I have preferred to spend time alone",          
-  "In the last THREE DAYS, I have had arguments with other people",        
-  "Today I have heard voices or saw things others cannot",                 
-  "Today I have had thoughts racing through my head",                      
-  "Today I feel I have special powers",                                   
-  "Today I feel people are watching me",                                  
-  "Today I feel people are against me",                                    
-  "Today I feel confused or puzzled",                                      
-  "Today I feel unable to cope and have difficulty with everyday tasks" ,  
-  "In the last THREE DAYS, I have had someone to talk to",                 
-  "In the last THREE DAYS, I have felt uneasy with groups of people",      
-  "Today I feel little interest or pleasure",                              
-  "Today I feel depressed" ,                                               
-  "Today I had trouble sleeping" ,                                         
-  "Today I feel tired or have little energy"  ,                            
-  "Today I have a poor appetite or am overeating"   ,                      
-  "Today I feel bad about myself or that I have let others down"  ,        
-  "Today I have trouble focusing or concentrating" ,                       
-  "Today I feel too slow or too restless" ,                                
-  "Today I have thoughts of self-harm",                                    
-  "Today I feel anxious" ,                                                 
-  "Today I cannot stop worrying" ,                                         
-  "Today I am worrying too much about different things",                   
-  "Today I have trouble relaxing"  ,                                       
-  "Today I feel so restless it's hard to sit still"  ,                     
-  "Today I am easily annoyed or irritable" ,                               
-  "Today I feel afraid something awful might happen" )
+    "Last night I had trouble falling asleep",                          
+    "Last night I had trouble staying asleep",                               
+    "This morning I was up earlier than I wanted",                           
+    "In the last THREE DAYS, I have taken my medications as scheduled",      
+    "In the last THREE DAYS, during the daytime I have gone outside my home",
+    "In the last THREE DAYS, I have preferred to spend time alone",          
+    "In the last THREE DAYS, I have had arguments with other people",        
+    "Today I have heard voices or saw things others cannot",                 
+    "Today I have had thoughts racing through my head",                      
+    "Today I feel I have special powers",                                   
+    "Today I feel people are watching me",                                  
+    "Today I feel people are against me",                                    
+    "Today I feel confused or puzzled",                                      
+    "Today I feel unable to cope and have difficulty with everyday tasks" ,  
+    "In the last THREE DAYS, I have had someone to talk to",                 
+    "In the last THREE DAYS, I have felt uneasy with groups of people",      
+    "Today I feel little interest or pleasure",                              
+    "Today I feel depressed" ,                                               
+    "Today I had trouble sleeping" ,                                         
+    "Today I feel tired or have little energy"  ,                            
+    "Today I have a poor appetite or am overeating"   ,                      
+    "Today I feel bad about myself or that I have let others down"  ,        
+    "Today I have trouble focusing or concentrating" ,                       
+    "Today I feel too slow or too restless" ,                                
+    "Today I have thoughts of self-harm",                                    
+    "Today I feel anxious" ,                                                 
+    "Today I cannot stop worrying" ,                                         
+    "Today I am worrying too much about different things",                   
+    "Today I have trouble relaxing"  ,                                       
+    "Today I feel so restless it's hard to sit still"  ,                     
+    "Today I am easily annoyed or irritable" ,                               
+    "Today I feel afraid something awful might happen" )
   cat = c("sleep","sleep","sleep","medication", "social", "social","social","psychosis","psychosis", 
           "psychosis","psychosis","psychosis","psychosis","psychosis","social","social" ,"depression","depression",
           "depression" ,"depression", "depression", "depression", "depression","depression","depression","anxiety",
@@ -135,23 +151,23 @@ survey_summary=function(chunk){
 
 game_reform <- function(game) {
   # Append statistics to the unique'd temporal events.
-  cat = c('Spatial Span Forward', 'Spatial Span Backward', 'Jewels Trails A', 'Jewels Trails B')
+  cat = c('Spatial Span Forward', 'Spatial Span Backward', 'Jewels A', 'Jewels B')
   unique_t <- unique(game$start)
   time_table <- matrix(0, nrow <- length(unique_t), ncol <- length(cat) * 3)
   for(i in 1 : length(unique_t)) {
     for(j in 1 : length(cat)) {
       temp <- subset(game, start == unique_t[i] & name == cat[j])
-      time_table[i, 3 * (j - 1) + 1]= mean(temp$correct == 'TRUE')
+      time_table[i, 3 * (j - 1) + 1]= mean(temp$correct == '1')
       time_table[i, 3 * (j - 1) + 2]= mean(temp$time / 1000)
       time_table[i, 3 * (j - 1) + 3]= sd(temp$time / 1000)
     }
   }
-
+  
   # Create specific column names for the new statistics columns.
   column <- c()
   for (i in 1 : length(cat))
     column <- c(column, c(paste0(cat[i], '_accuracy'), paste0(cat[i], '_mtime'), paste0(cat[i], '_sdtime')))
-
+  
   # Update and return the new dataframe.
   time_table <- setNames(data.frame(time_table), column)
   time_table$date <- unique_t
@@ -207,7 +223,7 @@ make_df <- function(x, y, x_name = x, y_name = y, source) {
 
 # 3 options in this function: accuracy, mean, sd
 game_plot <- function(table,option) {
-  name = c('Spatial Span Forward','Spatial Span Backward','Jewels Trails A','Jewels Trails B')
+  name = c('Spatial Span Forward','Spatial Span Backward','Jewels A','Jewels B')
   if(option=='accuracy'){
     new_name=paste0(name,'_accuracy')
     title_name = "Average Accuracy"
@@ -235,24 +251,24 @@ game_plot <- function(table,option) {
   # Create a GGPlot with each line chart.
   ggplot() + 
     geom_line(data = spatialF, 
-      aes(x = date, y = value, color = map)) +
+              aes(x = date, y = value, color = map)) +
     geom_line(data = spatialB, 
-      aes(x = date, y = value, color = map)) +
+              aes(x = date, y = value, color = map)) +
     geom_line(data = trailsA, 
-      aes(x = date, y = value, color = map)) +
+              aes(x = date, y = value, color = map)) +
     geom_line(data = trailsB, 
-      aes(x = date, y = value, color = map)) +
+              aes(x = date, y = value, color = map)) +
     geom_point(data = spatialF, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = spatialB, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = trailsA, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = trailsB, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     labs(title=title_name, x="Date", y=y_name) +
     scale_colour_manual("", values = c("Forward"="black","Backward"="red", 
-                    "Trails A"="blue","Trails B"="green"))
+                                       "Trails A"="blue","Trails B"="green"))
 }
 
 
@@ -296,22 +312,46 @@ survey_plot=function(table,option){
     geom_line(data = depression_dat, 
               aes(x = date, y = value, color = map)) +
     geom_point(data = sleep_dat, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = psychosis_dat, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = medication_dat, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = anxiety_dat, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = social_dat, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     geom_point(data = depression_dat, 
-              aes(x = date, y = value, color = map)) +
+               aes(x = date, y = value, color = map)) +
     labs(title=title_name, x="Date", y=y_name) +
     scale_colour_manual("", values = c("Sleep"="black","Psychosis"="red", "Medication"="blue",
                                        "Anxiety"="green","Social"="orange",'Depression'='purple'))
 }
 
-survey_plot(patient_table(commandArgs()$data)$survey,'time')
 
+survey_heatmap=function(survey_table){
+  current_date = survey_table$date[1]
+  last_date = survey_table$date[nrow(survey_table)]
+  ## get the mean of sleep/psychosis/... score every week
+  weeklyscore=c()
+  i=1 ## ith week since enrolled
+  while(current_date<last_date){
+    week_dat = subset(survey_table,date>=current_date & date<current_date+7)
+    score = colMeans(week_dat[,c(1,4,7,10,13,16)],na.rm=T)
+    weeklyscore=rbind(weeklyscore,c(i,score))
+    i = i+1
+    current_date = current_date+7
+  }
+  weeklyscore=data.frame(weeklyscore)
+  colnames(weeklyscore)=c('week','sleep','medication','social','psychosis','depression','anxiety')
+  weeklyscore=weeklyscore[complete.cases(weeklyscore),]
+  M=cor((weeklyscore[,-1]))
+  ggcorrplot(M, method = "circle", type="lower", ggtheme=ggplot2::theme_minimal, title=paste0('Based on data of ',nrow(weeklyscore),' weeks'), legend.title="Corr")
+}
 
+#survey_heatmap(patient_table(commandArgs()$data, 'survey'))
+#game_plot(patient_table(commandArgs()$data, 'game'),'accuracy')
+#game_plot(patient_table(commandArgs()$data, 'game'),'mean')
+#game_plot(patient_table(commandArgs()$data, 'game'),'sd')
+#survey_plot(patient_table(commandArgs()$data, 'survey'),'score')
+survey_plot(patient_table(commandArgs()$data, 'survey'),'time')
