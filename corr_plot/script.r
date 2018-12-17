@@ -342,8 +342,7 @@ survey_heatmap=function(survey_table){
   }
   weeklyscore=data.frame(weeklyscore)
   colnames(weeklyscore)=c('week','sleep','medication','social','psychosis','depression','anxiety')
-  weeklyscore=weeklyscore[complete.cases(weeklyscore),]
-  M=cor((weeklyscore[,-1]))
+  M=cor((weeklyscore[,-1]), use="pairwise.complete.obs")
   ggcorrplot(M, method = "circle", type="lower", ggtheme=ggplot2::theme_minimal, title=paste0('Based on data of ',nrow(weeklyscore),' weeks'), legend.title="Corr")
 }
 
