@@ -85,6 +85,7 @@ game_summary <- function(chunk,name) {
 survey_summary=function(chunk){
   temp <- chunk$temporal_events[[1]]
   if(is.null(temp)) return(NULL)
+  if(length(temp)==0) return(NULL)
   if(nrow(temp) <= 1) return(NULL)
   
   form=c()
