@@ -180,9 +180,12 @@ game_reform <- function(game) {
 answer_to_score=function(survey){
   survey$answer=as.numeric(as.character(survey$answer))
   score <- survey$answer
-  score[survey$name=='medication']=3-score[survey$name=='medication']
-  score[survey$question=='In the last THREE DAYS, during the daytime I have gone outside my home']=3-score[survey$question=='In the last THREE DAYS, during the daytime I have gone outside my home']
-  score[survey$question=='In the last THREE DAYS, I have had someone to talk to']=3-score[survey$question=='In the last THREE DAYS, I have had someone to talk to']
+   
+  # High scores are good for: sleep, social, social comparison, medication, and alliance
+  score[survey$name=='sleep']=3-score[survey$name=='sleep']
+  score[survey$question=='In the last THREE DAYS, I have preferred to spend time alone']=3-score[survey$question=='In the last THREE DAYS, I have preferred to spend time alone']
+  score[survey$question=='In the last THREE DAYS, I have had arguments with other people']=3-score[survey$question=='In the last THREE DAYS, I have had arguments with other people']
+  score[survey$question=='In the last THREE DAYS, I have felt uneasy with groups of people']=3-score[survey$question=='In the last THREE DAYS, I have felt uneasy with groups of people']
   score
 }
 
@@ -342,7 +345,7 @@ survey_heatmap=function(survey_table){
     current_date = current_date+7
   }
   weeklyscore=data.frame(weeklyscore)
-  colnames(weeklyscore)=c('week','sleep','medication','social','psychosis','depression','anxiety')
+  colnames(weeklyscore)=c('week','better sleep','medication','more social','psychosis','depression','anxiety')
   M=cor((weeklyscore[,-1]), use="pairwise.complete.obs")
   ggcorrplot(M, method = "circle", type="lower", ggtheme=ggplot2::theme_minimal, title=paste0('Based on data of ',nrow(weeklyscore),' weeks'), legend.title="Corr")
 }
